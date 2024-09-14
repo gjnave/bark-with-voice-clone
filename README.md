@@ -1,3 +1,83 @@
+### THIS FORK ###
+Fixes massive errors in the bark-with-voice-clone repo
+
+A few things to note:
+1) This software is difficult to install due to the lack of a requirements.txt file and it being an overall mess
+2) I have replaced several of the .ipynb files from the original forks. If you use these updated files you will avoid many errors.
+3) You must download the Retrieval-based-Voice-Conversion-WebUI and install it into the supplied folder (do NOT override the vc_infer_pipeline.py file that exists)
+   you can download the RVC-beta.7z file from: https://huggingface.co/lj1995/VoiceConversionWebUI/tree/main
+4) The original model file mi-test.pth has been (evidently) scrubbed from the internet. Download RVC1006Nvidia.7z and extract, youzhanv2-xi.pth from the assets/weights folder. Place it in your projects weight folder and delete the rest of the .7z file. You can download it from here: https://huggingface.co/lj1995/VoiceConversionWebUI/blob/main/RVC1006Nvidia.7z
+5) To use Ozen, follow the branch I have created as it fixes major problem with using conda. It can be cloned from here: https://github.com/gjnave/ozen-toolkit
+6) Ozens install file "set up ozen.bat" assumes that your miniconda is installed at c:\miniconda3 .. If otherwise, simply open the file and change it
+7) If you cannot get this installed manually, I have put everything together in an installer over at: www.patreon.com/cognibuild
+
+Technical Notes:
+1) I have been unable to properly install Attention - if you can be the hero and figure it out then let me know
+2) While the application, in theory, works, I have been unable to acheive less than an 17% loss validation when it comes to the "train_fine" portion of the script. If you can figure it out then you are hero yet again:
+
+ Here is the offending code where it goes off the rails:
+if accelerator.is_main_process:
+    mode**l.eval()**if accelerator.is_main_process:
+    model.eval()
+    validation_loss = 0.0
+    num_batches = 0
+    num_samples = 0
+    with torch.no_grad():
+        for val_step, val_batch in enumerate(validation_dataloader):
+            # Similar to training, process the validation batch
+            fine_targets_7 = val_batch['fine_tokens'][:, :, 6]
+            fine_tokens_input_7 = torch.cat([val_batch['fine_tokens'][:, :, :6], torch.zeros_like(val_batch['fine_tokens'][:, :, 6:])], dim=2)
+            fine_targets_8 = val_batch['fine_tokens'][:, :, 7]
+            fine_tokens_input_8 = torch.cat([val_batch['fine_tokens'][:, :, :7], torch.zeros_like(val_batch['fine_tokens'][:, :, 7:])], dim=2)
+
+            # Forward pass for validation
+            logits_7 = model(6, fine_tokens_input_7)
+            logits_8 = model(7, fine_tokens_input_8)
+
+            # Calculate the validation loss
+            loss_7 = criterion(logits_7.view(-1, model.config.output_vocab_size), fine_targets_7.view(-1))
+            loss_8 = criterion(logits_8.view(-1, model.config.output_vocab_size), fine_targets_8.view(-1))
+
+            loss = (loss_7 + loss_8) / 2
+            validation_loss += loss.item()
+            num_batches += 1
+            num_samples += val_batch['fine_tokens'].size(0)
+
+    average_validation_loss = validation_loss / num_batches
+    logger.info(f"Validation Loss: {average_validation_loss} over {num_samples} samples and {num_batches} batches.")
+    print(f"Validation Loss: {average_validation_loss} over {num_samples} samples and {num_batches} batches.")
+    validation_loss = 0.0
+    num_batches = 0
+    num_samples = 0
+    with torch.no_grad():
+        for val_step, val_batch in enumerate(validation_dataloader):
+            # Similar to training, process the validation batch
+            fine_targets_7 = val_batch['fine_tokens'][:, :, 6]
+            fine_tokens_input_7 = torch.cat([val_batch['fine_tokens'][:, :, :6], torch.zeros_like(val_batch['fine_tokens'][:, :, 6:])], dim=2)
+            fine_targets_8 = val_batch['fine_tokens'][:, :, 7]
+            fine_tokens_input_8 = torch.cat([val_batch['fine_tokens'][:, :, :7], torch.zeros_like(val_batch['fine_tokens'][:, :, 7:])], dim=2)
+
+            # Forward pass for validation
+            logits_7 = model(6, fine_tokens_input_7)
+            logits_8 = model(7, fine_tokens_input_8)
+
+            # Calculate the validation loss
+            loss_7 = criterion(logits_7.view(-1, model.config.output_vocab_size), fine_targets_7.view(-1))
+            loss_8 = criterion(logits_8.view(-1, model.config.output_vocab_size), fine_targets_8.view(-1))
+
+            loss = (loss_7 + loss_8) / 2
+            validation_loss += loss.item()
+            num_batches += 1
+            num_samples += val_batch['fine_tokens'].size(0)
+
+    average_validation_loss = validation_loss / num_batches
+    logger.info(f"Validation Loss: {average_validation_loss} over {num_samples} samples and {num_batches} batches.")
+    print(f"Validation Loss: {average_validation_loss} over {num_samples} samples and {num_batches} batches.")
+
+    
+
+################
+
 # 🐶 BARK AI: but with the ability to use voice cloning on custom audio samples
 
 For RVC `git clone https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI` and train your model or point the code to you model (must clone RVC repo in bark-with-voice-clone directory)
