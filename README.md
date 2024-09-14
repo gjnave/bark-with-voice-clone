@@ -16,8 +16,9 @@ Technical Notes:
 2) While the application, in theory, works, I have been unable to acheive less than an 17% loss validation when it comes to the "train_fine" portion of the script. If you can figure it out then you are hero yet again:
 
  Here is the offending code where it goes off the rails:
+ 
 if accelerator.is_main_process:
-    mode**l.eval()**if accelerator.is_main_process:
+    model.eval() if accelerator.is_main_process:
     model.eval()
     validation_loss = 0.0
     num_batches = 0
