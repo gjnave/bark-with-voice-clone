@@ -18,12 +18,19 @@ Technical Notes:
  Here is the offending code where it goes off the rails:
  
 if accelerator.is_main_process:
+
     model.eval() if accelerator.is_main_process:
+    
     model.eval()
+    
     validation_loss = 0.0
+    
     num_batches = 0
+    
     num_samples = 0
+    
     with torch.no_grad():
+    
         for val_step, val_batch in enumerate(validation_dataloader):
             # Similar to training, process the validation batch
             fine_targets_7 = val_batch['fine_tokens'][:, :, 6]
